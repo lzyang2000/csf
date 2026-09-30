@@ -1,0 +1,28 @@
+# SPDX-License-Identifier: Apache-2.0
+# MotionHiFlow (ai-lh/MotionHiFlow, vendored at third_party/MotionHiFlow).
+# HumanML3D 263-d features on the 22-joint SMPL body, 20 fps.
+#
+# scripts/fetch_motionhiflow_ckpts.sh downloads the pretrained models into
+# checkpoints/mhf/ (the Hugging Face snapshot keeps the repo's checkpoints/
+# prefix). Each *_dir below then holds config.yaml and
+# checkpoints/net_best_fid.tar.
+
+# Graph-convolutional VAE with a 16-d latent (HumanML3D).
+vae_dir: checkpoints/mhf/checkpoints/t2m_vae_agcn_16d
+
+# Latent flow-matching diffusion transformer over that latent.
+dit_dir: checkpoints/mhf/checkpoints/t2m_tmdit_16d
+
+# CLIP text encoder (openai/clip-vit-base-patch32). The DiT config loads it
+# from third_party/MotionHiFlow/deps/clip-vit-base-patch32, which the fetch
+# script links to this directory.
+clip_dir: checkpoints/mhf/clip-vit-base-patch32
+
+# Sampling settings of MotionHiFlow's released tmdit preset (run.sh).
+cond_scale: 4.5        # classifier-free guidance scale
+time_steps: 12         # flow-matching Euler steps
+
+# Motion format.
+fps: 20
+joints_num: 22
+dataset: t2m           # selects the HumanML3D normalisation statistics

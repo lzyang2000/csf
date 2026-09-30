@@ -1,0 +1,12 @@
+[submodule "third_party/kimodo"]
+	path = third_party/kimodo
+	url = https://github.com/nv-tlabs/kimodo.git
+[submodule "third_party/ECHO_CODE"]
+	path = third_party/ECHO_CODE
+	url = https://github.com/Hxxxz0/ECHO_CODE.git
+[submodule "third_party/MotionHiFlow"]
+	path = third_party/MotionHiFlow
+	url = https://github.com/ai-lh/MotionHiFlow.git
+[submodule "third_party/ardy"]
+	path = third_party/ardy
+	url = https://github.com/nv-tlabs/ardy

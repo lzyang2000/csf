@@ -1,0 +1,11 @@
+# SPDX-License-Identifier: Apache-2.0
+# ARDY-G1 (nv-tlabs/ardy, vendored at third_party/ardy).
+#
+# Weights download from Hugging Face (nvidia/ARDY-G1-RP-25FPS-Horizon52) into
+# the HF cache on first load; a stalled first download only needs a retry.
+# The frame rate (25 fps) is read from the checkpoint.
+model_name: g1               # ARDY registry nickname -> ARDY-G1-RP-25FPS-Horizon52
+num_denoising_steps: 10      # the checkpoint's trained step count (the maximum)
+cfg_weight: 2.0              # text classifier-free guidance weight (ARDY default)
+# history_frames: 196        # history per autoregressive window, in frames; unset
+                             # keeps each window within the trained 10 s span

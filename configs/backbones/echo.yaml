@@ -1,0 +1,16 @@
+# SPDX-License-Identifier: Apache-2.0
+# ECHO (Hxxxz0/ECHO_CODE, vendored at third_party/ECHO_CODE).
+#
+# scripts/fetch_echo_ckpts.sh clones the pretrained weights from ModelScope
+# into checkpoints/echo/. The clone nests the variants under an extra
+# checkpoints/ directory, and the 38-d normalisation statistics live in
+# robot_humanml_data_v2/ rather than in the variant directory.
+variant: full                 # lite | full | transformer (full: 512-d UNet)
+ckpt_dir: checkpoints/echo/checkpoints/robotv2/robotv2_38d   # opt.txt + model/latest.tar
+data_root: checkpoints/echo/robot_humanml_data_v2            # Mean_38d.npy + Std_38d.npy
+# G1 MJCF (free-joint root + 29 hinges, nq = 36) that decoded qpos rows are
+# converted through; kimodo's copy of the Unitree G1 model.
+mujoco_xml: third_party/kimodo/kimodo/assets/skeletons/g1skel34/xml/g1.xml
+num_denoising_steps: 10       # ECHO's trained DPM-Solver step count
+diffuser_name: dpmsolver
+fps: 50

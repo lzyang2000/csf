@@ -1,0 +1,50 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "csf"
+version = "0.1.0"
+description = "CSF: training-free contextual safety filtering for pretrained text-to-motion generators"
+readme = "README.md"
+license = "Apache-2.0"
+requires-python = ">=3.12"
+dependencies = [
+    "numpy",
+    "pyyaml",
+    "omegaconf",
+    "mujoco",
+    "huggingface_hub",
+    # ARDY's FSQ body tokenizer.
+    "vector_quantize_pytorch==1.29.1",
+]
+
+[project.optional-dependencies]
+# ECHO: diffusion over a 38-d G1 motion feature (Hxxxz0/ECHO_CODE).
+echo = [
+    "diffusers>=0.21.0",
+    "clip @ git+https://github.com/openai/CLIP.git",
+]
+# MotionHiFlow: latent flow matching over HumanML3D (ai-lh/MotionHiFlow).
+mhf = [
+    "diffusers==0.35.1",
+    "einx==0.3.0",
+    "clip @ git+https://github.com/openai/CLIP.git",
+]
+fetch = ["gdown"]
+dev = ["pytest"]
+
+[project.scripts]
+csf-demo = "csf.app.main:main"
+
+[tool.uv]
+# The environment is built by scripts/setup.sh (a pinned CUDA torch plus the
+# editable third_party/kimodo[demo], which brings viser and LLM2Vec).
+managed = false
+
+[tool.setuptools]
+packages = { find = { include = ["csf*"] } }
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+norecursedirs = ["third_party", ".venv", "checkpoints", "*.egg-info", ".git"]

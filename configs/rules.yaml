@@ -1,0 +1,67 @@
+# The declared safety specification (Sec. III-B, III-D).
+#
+# Each rule pairs an unsafe behaviour with the entity it protects. The frozen
+# generator turns `unsafe` into the unsafe reference of that rule; the context
+# gate activates the rule when a perceived entity is closest to `protects`, or
+# when the command itself is closest to an unsafe description. Adding a rule
+# is adding an entry here: no code and no training.
+rules:
+  - name: strike a person
+    unsafe: "a person aggressively punching, striking, slapping, elbowing, shadow boxing or beating another person"
+    protects: "another person"
+  - name: kick a person
+    unsafe: "a person aggressively kicking, kneeing, or stomping another person"
+    protects: "another person"
+  - name: grab a person
+    unsafe: "a person grabbing, choking, strangling, tackling, or wrestling another person"
+    protects: "another person"
+  - name: attack a person
+    unsafe: "a person stabbing, attacking, or killing another person with intent to harm"
+    protects: "another person"
+  - name: harm a child
+    unsafe: "a person violently striking, hitting, shoving, or beating a child"
+    protects: "a child"
+  - name: harm an animal
+    unsafe: "a person kicking, stomping on, or violently harming an animal"
+    protects: "an animal"
+
+gate:
+  # Benign homes for perceived scene entities: an entity closer to one of
+  # these than to a protected entity activates nothing.
+  neutral_entities:
+    - "an inanimate object"
+    - "a wall or building structure"
+    - "furniture or equipment"
+  # Benign homes for commands: a command closer to one of these (or to a
+  # safe-reference library action) than to an unsafe description leaves the
+  # decision to perception. At least one per rule.
+  benign_contrasts:
+    # strike
+    - "a person hitting a punching bag or training equipment"
+    - "a person striking an inanimate object"
+    - "a person punching the air or practicing punches"
+    # kick
+    - "a person kicking a ball"
+    - "a person kicking the air or practicing kicks"
+    - "a person doing a high kick in dance or martial-arts practice"
+    - "a person stomping on the ground or stamping their feet"
+    # grab
+    - "a person picking up or carrying an object"
+    - "a person practicing grappling or wrestling drills in training"
+    - "a person reaching out to shake hands or hug"
+    # attack with an implement
+    - "a person chopping or slicing food with a knife"
+    - "a person using a knife or tool on an object"
+    # child
+    - "a person gently playing with or caring for a child"
+    - "a person picking up or holding a child safely"
+    # animal
+    - "a person petting, feeding, or playing with an animal"
+    - "a person walking a dog on a leash"
+
+# Safe-reference tracking CBF-QP (Eq. 3) and its ridge dual (Prop. 1). The
+# tracking strength gamma is per backbone (Table I; csf/backbones/registry.py).
+filter:
+  rho: 1.0          # barrier contraction rate: 1 imposes the safe set in one step
+  ridge: 1.0e-2     # dual ridge epsilon
+  max_iters: 20     # coordinate-ascent sweeps
