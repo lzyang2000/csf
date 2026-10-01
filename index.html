@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CSF: Contextual Safety Filtering for Motion Generators</title>
+  <meta name="description" content="CSF is a training-free safety filter for pretrained text-to-motion generators. Natural-language rules define what is unsafe, the scene decides which rules apply, and a safe-reference tracking CBF-QP corrects the generator's estimate at every sampling step. Tested on four generators and a Unitree G1.">
+  <meta name="author" content="Lizhi Yang, Yiling Hou, Yao Tang, Junheng Li, Daniel Weng, Blake Werner, Aaron D. Ames">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="CSF: Contextual Safety Filtering for Motion Generators">
+  <meta property="og:description" content="A training-free filter that grounds natural-language safety rules in a motion generator's own outputs, so the same command passes toward an object and is redirected when a person is present.">
+  <meta property="og:url" content="https://lzyang2000.github.io/csf/">
+  <meta property="og:image" content="https://lzyang2000.github.io/csf/static/images/teaser.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="citation_title" content="CSF: Contextual Safety Filtering for Motion Generators">
+  <meta name="citation_author" content="Yang, Lizhi">
+  <meta name="citation_author" content="Hou, Yiling">
+  <meta name="citation_author" content="Tang, Yao">
+  <meta name="citation_author" content="Li, Junheng">
+  <meta name="citation_author" content="Weng, Daniel">
+  <meta name="citation_author" content="Werner, Blake">
+  <meta name="citation_author" content="Ames, Aaron D.">
+  <meta name="citation_publication_date" content="2026">
+  <meta name="citation_pdf_url" content="https://arxiv.org/pdf/2610.12467">
+  <meta name="theme-color" content="#0b0f17">
+  <link rel="icon" href="static/images/favicon.ico" sizes="any">
+  <link rel="icon" href="static/images/favicon.png" type="image/png">
+  <link rel="apple-touch-icon" href="static/images/apple-touch-icon.png">
+  <link rel="stylesheet" href="static/css/site.css">
+  <script defer src="static/js/site.js"></script>
+</head>
+<body>
+  <header class="hero">
+    <video class="hero-bg" autoplay loop muted playsinline preload="auto" poster="static/videos/banner_poster.jpg" aria-hidden="true">
+      <source src="static/videos/banner.mp4" type="video/mp4">
+    </video>
+    <div class="hero-body">
+      <h1><img src="static/images/logo.png" alt="CSF" class="hero-logo"></h1>
+      <p class="hero-sub">Contextual Safety Filtering for Motion Generators</p>
+      <p class="authors">
+        <a href="https://lzyang2000.github.io" target="_blank" rel="noopener">Lizhi Yang</a><sup>1</sup>,
+        Yiling Hou<sup>1</sup>,
+        Yao Tang<sup>1</sup>,
+        <a href="https://junhengl.github.io" target="_blank" rel="noopener">Junheng Li</a><sup>1</sup>,
+        Daniel Weng<sup>2</sup>,
+        Blake Werner<sup>1</sup>,
+        <a href="https://scholar.google.com/citations?user=TjWwqmwAAAAJ&hl=en" target="_blank" rel="noopener">Aaron D. Ames</a><sup>1</sup>
+      </p>
+      <p class="affil"><sup>1</sup>California Institute of Technology &nbsp; <sup>2</sup>New York University</p>
+      <nav class="links">
+        <a class="btn" href="https://arxiv.org/abs/2610.12467" target="_blank" rel="noopener">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M3 1h7l3 3v11H3zM9.5 1.5V4.5h3" opacity=".95"/><path fill="#1f2328" d="M5 7h6v1H5zm0 2h6v1H5zm0 2h4v1H5z"/></svg>
+          Paper
+        </a>
+        <a class="btn" href="https://github.com/lzyang2000/csf" target="_blank" rel="noopener">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+          Code
+        </a>
+        <button class="btn" type="button" id="open-video">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M4 2.5v11l9-5.5z"/></svg>
+          Video
+        </button>
+        <a class="btn" href="#demo">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M2 3h12v8H2zM6 13h4v1H6z" opacity=".9"/></svg>
+          Demo
+        </a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="wrap">
+      <figure class="teaser">
+        <img src="static/images/teaser.jpg" alt="A Unitree G1 throws a forward punch. With a box in front of it the punch passes; with a person in front of it, CSF redirects the motion.">
+        <figcaption>The same command, “Throw a forward punch”, on a real Unitree G1. The semantic gate combines language and vision to tell an object from a person: CSF passes the punch toward the box and redirects it to a safe motion when a person is present.</figcaption>
+      </figure>
+
+      <h2>Abstract</h2>
+      <p>Text-conditioned motion generators produce trackable whole-body motion, but they have no notion of scene-dependent safety: the same action may target an object or a person. Existing safeguards either inspect the prompt, require labeled motion data, or enforce geometric constraints; therefore, they do not directly account for how scene context changes a motion's meaning. We introduce contextual safety filtering (CSF), a training-free filter that grounds natural-language safety rules in safe and unsafe reference trajectories produced by the generator. For each active rule, safe and unsafe reference trajectories define an affine safety value that a safe reference tracking CBF-QP enforces. Across four pretrained generators with different architectures, CSF activates the intended rules in all explicit and scene-triggered unsafe cases and reduces the danger-event rate by up to 90%, while preserving 88–100% of benign motions. We demonstrate the complete system on a real-world Unitree G1, where it successfully prevents unsafe motions in a variety of scenarios, including interactions with humans and objects.</p>
+    </section>
+
+    <section class="wrap" id="method">
+      <h2>How it works</h2>
+      <figure>
+        <img src="static/images/overview.jpg" alt="System overview: rules and live context select the constraints of a safe-reference tracking CBF-QP inside the frozen generator; a runtime shield redirects the uncommitted future before a whole-body controller tracks it on the G1.">
+        <figcaption>Three parts, each shown below: the rules and live context select which constraints apply; during generation, a safe-reference tracking CBF-QP filters the frozen generator's estimate at every sampling step; during execution, a shield redirects the part of the motion that has not run yet when the scene changes.</figcaption>
+      </figure>
+      <div class="method-row">
+        <video class="clip" autoplay loop muted playsinline preload="none" poster="static/videos/method_gate_poster.jpg" data-autoplay>
+          <source src="static/videos/method_gate.mp4" type="video/mp4">
+        </video>
+        <div>
+          <h3>Rules and live context</h3>
+          <p>Each rule names an unsafe behavior and the entity it protects, for example “do not punch a person”. The command and the entities in view decide which rules apply, so a punch at a wall passes until a person steps in.</p>
+        </div>
+      </div>
+      <div class="method-row">
+        <video class="clip" autoplay loop muted playsinline preload="none" poster="static/videos/method_filter_poster.jpg" data-autoplay>
+          <source src="static/videos/method_filter.mp4" type="video/mp4">
+        </video>
+        <div>
+          <h3>Filtering during generation</h3>
+          <p>The frozen generator also produces an unsafe reference for each active rule and a safe version of the command. Their difference defines a margin that is affine in the motion. At every sampling step, a small CBF-QP moves the current estimate to the safe side before the sampler continues.</p>
+        </div>
+      </div>
+      <div class="method-row">
+        <video class="clip" autoplay loop muted playsinline preload="none" poster="static/videos/method_shield_poster.jpg" data-autoplay>
+          <source src="static/videos/method_shield.mp4" type="video/mp4">
+        </video>
+        <div>
+          <h3>A shield during execution</h3>
+          <p>If the scene changes while a motion is running, the same rules check the part that has not been executed yet. The executed part is kept, and the rest is spliced onto a safe continuation for the tracking controller.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="wrap" id="demo">
+      <h2>Generation with and without the filter</h2>
+      <p>Kimodo builds a 4 s clip over 100 sampling steps, and at every step it has an estimate of the whole clip. Both rows start from the same noise: the top row is Kimodo on its own, the bottom row runs CSF at every step. Drag the bar to move through the sampling steps; the motion holds its frame while you drag. At step 1 the two estimates are the same rough guess. With a person in view they separate, and by step 100 the top row kicks while the bottom row does not. The bars on the right show each active rule's margin h before (orange) and after (blue) CSF at that step; h&nbsp;≥&nbsp;0 is safe. Untick <em>Person in scene</em> and both rows produce the same motion, except in the last scene, where the command itself names a person.</p>
+      <div class="demo-frame" id="demo-frame">
+        <button class="demo-poster" id="demo-launch" type="button" style="background-image:url('static/images/demo_poster.jpg')">
+          <span class="demo-start">Start the demo</span>
+          <span class="demo-note">Recorded from the released code. About 6 MB, runs in the browser.</span>
+        </button>
+      </div>
+      <p class="small"><a href="demo/" target="_blank" rel="noopener">Open the demo on its own page</a></p>
+    </section>
+
+    <section class="wrap" id="generators">
+      <h2>Four generators, one filter</h2>
+      <p>The same rules, gate and QP run on four pretrained generators with different samplers: Kimodo (DDIM diffusion), ARDY (windowed autoregressive diffusion), ECHO (diffusion with DPM-Solver) and MotionHiFlow (flow matching in a VAE latent). Each pair shows the generator alone and with CSF, for explicit commands, misleading commands with a person in view, and benign commands.</p>
+      <video class="clip" autoplay loop muted playsinline preload="none" poster="static/videos/sim_backbones_poster.jpg" data-autoplay>
+        <source src="static/videos/sim_backbones.mp4" type="video/mp4">
+      </video>
+    </section>
+
+    <section class="wrap" id="hardware">
+      <h2>On a Unitree G1</h2>
+      <p>ARDY generates the reference, CSF filters it, and a pretrained SONIC policy tracks it on the robot. A spoken command and camera perception supply the prompt and the scene.</p>
+      <div class="hw-case">
+        <p class="hw-cap"><span class="tag unsafe">Explicit</span> “Walk slowly and punch at a person.” CSF blocks the punch.</p>
+        <div class="pair" data-pair>
+          <figure><figcaption class="side">Without CSF</figcaption>
+            <video class="clip" muted playsinline preload="none" poster="static/videos/hw_explicit_off_poster.jpg">
+              <source src="static/videos/hw_explicit_off.mp4" type="video/mp4">
+            </video></figure>
+          <figure><figcaption class="side">With CSF</figcaption>
+            <video class="clip" muted playsinline preload="none" poster="static/videos/hw_explicit_on_poster.jpg">
+              <source src="static/videos/hw_explicit_on.mp4" type="video/mp4">
+            </video></figure>
+        </div>
+      </div>
+      <div class="hw-case">
+        <p class="hw-cap"><span class="tag unsafe">Deceptive</span> “Walk slowly and punch at a pillar”, with a person in view. Perception activates the rule.</p>
+        <div class="pair" data-pair>
+          <figure><figcaption class="side">Without CSF</figcaption>
+            <video class="clip" muted playsinline preload="none" poster="static/videos/hw_deceptive_off_poster.jpg">
+              <source src="static/videos/hw_deceptive_off.mp4" type="video/mp4">
+            </video></figure>
+          <figure><figcaption class="side">With CSF</figcaption>
+            <video class="clip" muted playsinline preload="none" poster="static/videos/hw_deceptive_on_poster.jpg">
+              <source src="static/videos/hw_deceptive_on.mp4" type="video/mp4">
+            </video></figure>
+        </div>
+      </div>
+      <div class="hw-case">
+        <p class="hw-cap"><span class="tag benign">Benign</span> The same command with only the pillar present. The punch is kept.</p>
+        <div class="pair" data-pair>
+          <figure><figcaption class="side">Without CSF</figcaption>
+            <video class="clip" muted playsinline preload="none" poster="static/videos/hw_benign_off_poster.jpg">
+              <source src="static/videos/hw_benign_off.mp4" type="video/mp4">
+            </video></figure>
+          <figure><figcaption class="side">With CSF</figcaption>
+            <video class="clip" muted playsinline preload="none" poster="static/videos/hw_benign_on_poster.jpg">
+              <source src="static/videos/hw_benign_on.mp4" type="video/mp4">
+            </video></figure>
+        </div>
+      </div>
+      <div class="hw-case">
+        <p class="hw-cap"><span class="tag unsafe">Runtime</span> A person walks in while the punch is executing. The shield keeps what has run and redirects the rest.</p>
+        <div class="pair" data-pair>
+          <figure><figcaption class="side">Without the shield</figcaption>
+            <video class="clip" muted playsinline preload="none" poster="static/videos/hw_runtime_off_poster.jpg">
+              <source src="static/videos/hw_runtime_off.mp4" type="video/mp4">
+            </video></figure>
+          <figure><figcaption class="side">With the shield</figcaption>
+            <video class="clip" muted playsinline preload="none" poster="static/videos/hw_runtime_on_poster.jpg">
+              <source src="static/videos/hw_runtime_on.mp4" type="video/mp4">
+            </video></figure>
+        </div>
+      </div>
+    </section>
+
+    <section class="wrap" id="bibtex">
+      <div class="bibtex-head">
+        <h2>BibTeX</h2>
+        <button class="btn-plain" type="button" id="copy-bibtex">Copy</button>
+      </div>
+<pre id="bibtex-code"><code>@article{yang2026csf,
+  title   = {{CSF}: Contextual Safety Filtering for Motion Generators},
+  author  = {Yang, Lizhi and Hou, Yiling and Tang, Yao and Li, Junheng and
+             Weng, Daniel and Werner, Blake and Ames, Aaron D.},
+  year    = {2026},
+  journal = {arXiv preprint arXiv:2610.12467}
+}</code></pre>
+    </section>
+  </main>
+
+  <footer class="wrap footer">
+    <div class="funding">
+      <img src="static/images/dow.svg" alt="The Dow Chemical Company">
+      <img src="static/images/tii.png" alt="Technology Innovation Institute">
+    </div>
+    <p>This work is supported by The Dow Chemical Company project #227027AW and in part by Technology Innovation Institute.</p>
+  </footer>
+
+  <dialog id="video-dialog" aria-label="Full video">
+    <video id="full-video" controls muted playsinline preload="none" poster="static/videos/full_poster.jpg">
+      <source src="static/videos/full.mp4" type="video/mp4">
+    </video>
+    <button class="btn-plain close" type="button" id="close-video">Close</button>
+  </dialog>
+</body>
+</html>
